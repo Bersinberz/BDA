@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chennai Pollution Monitor - Landing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary-blue: #3498db;
+      --primary-teal: #1abc9c;
+      --primary-green: #2ecc71;
+      --text-dark: #2c3e50;
+      --text-light: #7f8c8d;
+      --page-bg: #f8fafc;
+      --border-color: #e1e8ed;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background-color: var(--page-bg);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Container */
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1500px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 40px;
+      box-sizing: border-box;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30px 0 10px;
+    }
+
+    .left-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      height: 50px;
+      width: auto;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-info {
+      font-size: 14px;
+      color: var(--text-light);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* Tabs */
+    .tabs {
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .tab-link {
+      display: inline-block;
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 10px 15px;
+      margin-right: 15px;
+      font-size: 16px;
+      color: var(--text-light);
+      font-family: "Inter", sans-serif;
+      cursor: pointer;
+      position: relative;
+      top: 2px;
+    }
+
+    .tab-link.active {
+      color: var(--primary-blue);
+      font-weight: 700;
+      border-bottom: 3px solid var(--primary-blue);
+    }
+
+    /* Landing Form */
+    .landing-container {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      margin: 60px auto 450px;
+      position: relative;
+    }
+
+    .landing-container h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .landing-container input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .location-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .location-group input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .landing-container button {
+      width: 100%;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--primary-blue);
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background 0.2s ease;
+    }
+
+    .landing-container button:hover {
+      background-color: var(--primary-teal);
+    }
+
+    /* Loader */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .loader {
+      border: 6px solid #e3e3e3;
+      border-top: 6px solid var(--primary-blue);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="left-header">
+        <img src="./asserts/logo.png" alt="Chennai Pollution Monitor Logo" class="logo" />
+        <h1>Chennai Pollution Monitor</h1>
+      </div>
+      <div class="header-info">Last updated: <span id="last-updated">...</span></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <a href="index.html" class="tab-link active">Home</a>
+      <a href="dashboard.html" class="tab-link">Dashboard</a>
+      <a href="graph.html" class="tab-link">Trends</a>
+      <a href="alerts.html" class="tab-link">Alerts</a>
+    </div>
+  </div>
+
+  <!-- Landing Form -->
+  <div class="landing-container">
+    <h2>Enter Your Details</h2>
+    <input type="text" id="name" placeholder="Full Name" />
+    <input type="tel" id="phone" placeholder="Phone Number" value="+91" />
+    <div class="location-group">
+      <input type="text" id="latitude" placeholder="Latitude" />
+      <input type="text" id="longitude" placeholder="Longitude" />
+    </div>
+    <button id="detect-location">Detect My Location</button>
+    <button id="submit-form">Submit</button>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+  </div>
+
+  <script>
+    // Detect user location
+    document.getElementById("detect-location").addEventListener("click", () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            document.getElementById("latitude").value = latitude.toFixed(4);
+            document.getElementById("longitude").value = longitude.toFixed(4);
+          },
+          (err) => {
+            alert("Unable to detect location. Please enter manually.");
+            console.error(err);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    });
+
+    // Submit form
+    document.getElementById("submit-form").addEventListener("click", async () => {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const lat = document.getElementById("latitude").value.trim();
+      const lon = document.getElementById("longitude").value.trim();
+
+      if (!name || !phone || !lat || !lon) {
+        alert("Please fill in all fields!");
+        return;
+      }
+
+      const payload = { name, phone, latitude: parseFloat(lat), longitude: parseFloat(lon) };
+      const loader = document.getElementById("loader");
+      loader.style.display = "flex";
+
+      try {
+        const res = await fetch("http://localhost:3000/api/check-location", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        loader.style.display = "none";
+
+        if (!res.ok) {
+          alert(data.error || "Failed to check location AQI");
+          return;
+        }
+
+        const dialog = document.createElement("div");
+        dialog.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
+          box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+          text-align: center;
+          width: 420px;
+        `;
+        dialog.innerHTML = `
+          <h2 style="margin-bottom:10px;">Hello, ${name}!</h2>
+          <p><strong>AQI:</strong> ${data.aqi} (${data.status})</p>
+          <p><strong>Dominant Pollutant:</strong> ${data.dominantPollutant}</p>
+          <p style="margin-top:15px;">${data.alert}</p>
+          <button id="continueBtn" style="
+            margin-top:25px;
+            padding:12px 25px;
+            border:none;
+            border-radius:10px;
+            background-color:#3498db;
+            color:white;
+            cursor:pointer;
+            font-weight:600;
+            font-size:16px;
+          ">Continue</button>
+        `;
+        document.body.appendChild(dialog);
+
+        document.getElementById("continueBtn").addEventListener("click", () => {
+          window.location.href = `dashboard.html?lat=${lat}&lon=${lon}`;
+        });
+      } catch (err) {
+        loader.style.display = "none";
+        console.error(err);
+        alert("Error connecting to server");
+      }
+    });
+
+    // Update last updated time
+    async function updateLastUpdated() {
+      try {
+        const res = await fetch("http://localhost:3000/api/dashboard");
+        const data = await res.json();
+        document.getElementById("last-updated").textContent = new Date(data.lastUpdated).toLocaleTimeString();
+      } catch (err) {
+        console.error("Failed to fetch last updated:", err);
+        document.getElementById("last-updated").textContent = "N/A";
+      }
+    }
+
+    updateLastUpdated();
+  </script>
+</body>
+</html>
