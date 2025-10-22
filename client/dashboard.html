@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chennai Pollution Monitor - Dashboard</title>
+  <link rel="icon" href="./asserts/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <style>
+    :root {
+      --primary-blue: #3498db;
+      --primary-green: #2ecc71;
+      --primary-orange: #f39c12;
+      --primary-red: #e74c3c;
+      --primary-purple: #9b59b6;
+      --primary-teal: #1abc9c;
+      --text-dark: #2c3e50;
+      --text-light: #7f8c8d;
+      --page-bg: #f8fafc;
+      --border-color: #e1e8ed;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--page-bg);
+      color: var(--text-dark);
+      overflow: hidden;
+    }
+
+    .container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 0 40px;
+      box-sizing: border-box;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30px 0 10px;
+    }
+
+    .left-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      height: 50px;
+      width: auto;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-info {
+      font-size: 14px;
+      color: var(--text-light);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* GRID LAYOUT */
+    .dashboard-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.5fr 3fr;
+      gap: 30px;
+      padding-bottom: 20px;
+      overflow: hidden;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      background: white;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      height: 92%;
+      overflow: hidden;
+    }
+
+    /* --- Left Panel AQI Cards --- */
+    .overall-aqi-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 20px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .overall-aqi-section .aqi-card {
+      flex: 1;
+      background: #e5e7eb;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .overall-aqi-section .aqi-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+    }
+
+    .overall-aqi-section .aqi-card .aqi-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 5px 0;
+    }
+
+    .overall-aqi-section .aqi-card .aqi-label {
+      color: white;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 0;
+      width: 80%;
+      margin: 8px auto 0;
+      font-size: 14px;
+    }
+
+    .left-panel h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin: 0;
+      text-align: center;
+    }
+
+    .aqi-value {
+      font-size: 80px;
+      font-weight: 800;
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .aqi-status {
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      font-weight: 700;
+      font-size: 16px;
+      color: white;
+      text-align: center;
+    }
+
+    /* ALERTS CONTAINER - EXPANDED */
+    #alerts-container {
+      width: 100%;
+      margin-top: 10px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-blue) var(--page-bg);
+    }
+
+    .alert-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f2f4f5;
+      border: 1px solid var(--border-color);
+      border-left: 6px solid var(--primary-orange);
+      border-radius: 10px;
+      padding: 12px 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .alert-box.good { border-left-color: var(--primary-green); }
+    .alert-box.moderate { border-left-color: var(--primary-orange); }
+    .alert-box.unhealthy { border-left-color: var(--primary-red); }
+    .alert-box.very-unhealthy { border-left-color: var(--primary-purple); }
+    .alert-box.hazardous { border-left-color: #7e0023; }
+
+    .alert-location {
+      font-weight: 700;
+      color: var(--text-dark);
+      flex: 1;
+      text-align: left;
+      font-size: 16px;
+    }
+
+    .alert-details {
+      font-size: 14px;
+      color: var(--text-light);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .alert-details span {
+      display: block;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .status-color-good { background-color: var(--primary-green); }
+    .status-color-moderate { background-color: var(--primary-orange); }
+    .status-color-unhealthy { background-color: var(--primary-red); }
+    .status-color-very-unhealthy { background-color: var(--primary-purple); }
+    .status-color-hazardous { background-color: #7e0023; }
+
+    /* RIGHT PANEL */
+    .right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    .zone-monitoring {
+      background: white;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
+      padding: 30px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .zone-monitoring h2 {
+      font-size: 20px;
+      font-weight: 1000;
+      margin-bottom: 15px;
+      color: var(--text-dark);
+      display: inline;
+    }
+
+    select#zone-select {
+      padding: 10px 20px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: white;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      margin-bottom: 20px;
+      min-width: 150px;
+      float: right;
+    }
+
+    .zone-details {
+      padding: 20px 0;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .zone-boxes {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 20px;
+    }
+
+    .zone-box h2 {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .zone-box .aqi-value {
+      font-size: 50px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .zone-box .aqi-status {
+      margin-top: 8px;
+      font-size: 16px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: white;
+      display: inline-block;
+    }
+
+    .zone-box,
+    .aqi-card,
+    .dominant {
+      flex: 1;
+      background: #e5e7eb;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* consistent typography */
+    .zone-box h2,
+    .aqi-card h3,
+    .dominant h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+    }
+
+    /* AQI value size */
+    .zone-box .aqi-value,
+    .aqi-card .aqi-value {
+      font-size: 48px;
+      font-weight: 800;
+      margin: 5px 0;
+      color: #1f2937;
+    }
+
+    /* Status label */
+    .zone-box .aqi-status,
+    .aqi-card .aqi-label {
+      color: white;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 0;
+      width: 80%;
+      margin: 8px auto 0;
+      font-size: 14px;
+    }
+
+    /* Dominant pollutant styling */
+    .dominant p {
+      margin: 8px 0 0;
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--primary-blue);
+    }
+
+    .dominant h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: calc(100% - 200px);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+
+    .fullscreen-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-dark);
+      box-shadow: var(--card-shadow);
+      transition: background 0.2s ease;
+      z-index: 1000;
+    }
+
+    .fullscreen-btn:hover {
+      background: var(--page-bg);
+    }
+
+    .aqi-card h3 {
+      margin-top: 0;
+      font-size: 14px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .aqi-value {
+      font-size: 48px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 10px 0;
+    }
+
+    .aqi-label {
+      color: white;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 0;
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    .aqi-bar-container {
+      width: 100%;
+      height: 20px;
+      background-color: #cecfd3f6;
+      border-radius: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .aqi-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.5s ease, background-color 0.5s ease;
+    }
+
+    /* --- Loader Screen --- */
+    #loader-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(248, 250, 252, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #e0e0e0;
+      border-top-color: var(--primary-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    #loader-screen p {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-blue);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .tabs {
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .tab-link {
+      display: inline-block;
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 10px 15px;
+      margin-right: 15px;
+      font-size: 16px;
+      color: var(--text-light);
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      position: relative;
+      top: 2px;
+    }
+
+    .tab-link.active {
+      color: var(--primary-blue);
+      font-weight: 700;
+      border-bottom: 3px solid var(--primary-blue);
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 0 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loader Screen -->
+  <div id="loader-screen">
+    <div class="spinner"></div>
+    <p>Loading Chennai Pollution Data...</p>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="left-header">
+        <img src="./asserts/logo.png" alt="Chennai Pollution Monitor Logo" class="logo">
+        <h1>Chennai Pollution Monitor</h1>
+      </div>
+      <div class="header-info">
+        Last updated: <span id="last-updated">...</span>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <a href="index.html" class="tab-link">Home</a>
+      <a href="dashboard.html" class="tab-link active">Dashboard</a>
+      <a href="graph.html" class="tab-link">Trends</a>
+      <a href="alerts.html" class="tab-link">Alerts</a>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-grid">
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+        <!-- Overall AQI Container -->
+        <div class="overall-aqi-section">
+          <div class="aqi-card">
+            <h3>Overall Air Quality Index (AQI) in Chennai</h3>
+            <div id="overall-aqi" class="aqi-value">--</div>
+            <div id="overall-status" class="aqi-label">Loading...</div>
+          </div>
+
+          <div class="aqi-card">
+            <h3>Predicted AQI (Next Hour)</h3>
+            <div id="predicted-next-hour" class="aqi-value">--</div>
+            <div id="predicted-status" class="aqi-label">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Alerts Container -->
+        <h3 style="margin-top: 20px;">Alerts</h3>
+        <div id="alerts-container"></div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right">
+        <div class="zone-monitoring">
+          <h2>ZONE MONITORING</h2>
+          <select id="zone-select"></select>
+          
+          <div class="zone-details">
+            <div class="zone-boxes">
+              <div class="zone-box">
+                <h2 id="zone-name">Loading...</h2>
+                <span id="zone-aqi" class="aqi-value">--</span>
+                <div id="zone-status" class="aqi-status">Loading...</div>
+              </div>
+
+              <div class="dominant">
+                <h3>Dominant Pollutant</h3>
+                <p id="zone-dominant">--</p>
+              </div>
+
+              <div class="aqi-card" id="zone-aqi-status-card">
+                <h3>AQI Level</h3>
+                <div class="aqi-bar-container">
+                  <div class="aqi-bar" id="zone-aqi-bar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-container">
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet & Script -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const overallAQIEl = document.getElementById("overall-aqi");
+    const overallStatusEl = document.getElementById("overall-status");
+    const zoneSelect = document.getElementById("zone-select");
+    const zoneNameEl = document.getElementById("zone-name");
+    const zoneAQIEl = document.getElementById("zone-aqi");
+    const zoneStatusEl = document.getElementById("zone-status");
+    const zoneDominantEl = document.getElementById("zone-dominant");
+    const lastUpdatedEl = document.getElementById("last-updated");
+    const loaderScreen = document.getElementById("loader-screen");
+
+    let zones = [];
+    const map = L.map("map").setView([13.0827, 80.2707], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+    const markers = {};
+
+    // ✅ Helper: AQI status & color
+    function getAQIStatus(aqi) {
+      if (aqi <= 50) return { text: "Good", color: "status-color-good", fill: "#2ecc71" };
+      if (aqi <= 100) return { text: "Moderate", color: "status-color-moderate", fill: "#f39c12" };
+      if (aqi <= 200) return { text: "Unhealthy", color: "status-color-unhealthy", fill: "#e74c3c" };
+      if (aqi <= 300) return { text: "Very Unhealthy", color: "status-color-very-unhealthy", fill: "#9b59b6" };
+      return { text: "Hazardous", color: "status-color-hazardous", fill: "#7e0023" };
+    }
+
+    // ✅ Loader control functions
+    function showLoader() {
+      loaderScreen.style.opacity = "1";
+      loaderScreen.style.display = "flex";
+    }
+
+    function hideLoader() {
+      loaderScreen.style.opacity = "0";
+      setTimeout(() => (loaderScreen.style.display = "none"), 500);
+    }
+
+    // ✅ Load dashboard data from server
+    async function loadDashboard() {
+      try {
+        showLoader();
+
+        const res = await fetch("http://localhost:3000/api/dashboard");
+        if (!res.ok) {
+          throw new Error(`Server responded with ${res.status}`);
+        }
+        const data = await res.json();
+        zones = data.zones;
+
+        // --- Overall AQI ---
+        const overallStatus = getAQIStatus(data.overallAQI);
+        overallAQIEl.textContent = data.overallAQI;
+        overallStatusEl.textContent = overallStatus.text;
+        overallStatusEl.className = `aqi-label ${overallStatus.color}`;
+
+        if (data.lastUpdated) {
+          const updatedTime = new Date(data.lastUpdated);
+          lastUpdatedEl.textContent = updatedTime.toLocaleString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+        }
+
+        // --- Predicted AQI (Next Hour) ---
+        const predictedNextHourEl = document.getElementById("predicted-next-hour");
+        const predictedStatusEl = document.getElementById("predicted-status");
+
+        if (data.predictedNextHourAQI !== undefined && data.predictedNextHourAQI !== null) {
+          const nextHourStatus = getAQIStatus(data.predictedNextHourAQI);
+          predictedNextHourEl.textContent = data.predictedNextHourAQI.toFixed(2);
+          predictedStatusEl.textContent = nextHourStatus.text;
+          predictedStatusEl.className = `aqi-label ${nextHourStatus.color}`;
+        } else {
+          predictedNextHourEl.textContent = "N/A";
+          predictedStatusEl.textContent = "Unavailable";
+          predictedStatusEl.className = `aqi-label status-color-moderate`;
+        }
+
+        // --- Populate Zone Dropdown ---
+        zoneSelect.innerHTML = zones
+          .map((z) => `<option value="${z.name}">${z.name}</option>`)
+          .join("");
+
+        // --- Default Zone ---
+        if (zones.length > 0) {
+          updateZone(zones[0]);
+        }
+
+        // --- Add Map Markers ---
+        zones.forEach((z) => {
+          const status = getAQIStatus(z.aqi);
+          const marker = L.circleMarker([z.coords[0], z.coords[1]], {
+            radius: 9,
+            fillColor: status.fill,
+            color: status.fill,
+            fillOpacity: 0.8,
+            weight: 2,
+          }).addTo(map);
+
+          marker.bindPopup(
+            `<strong>${z.name}</strong><br>AQI: ${z.aqi}<br>${status.text}<br>Dominant: ${z.dominantPollutant}`
+          );
+
+          marker.on("click", () => {
+            zoneSelect.value = z.name;
+            updateZone(z);
+          });
+
+          markers[z.name] = marker;
+        });
+
+        // --- Update Alerts ---
+        updateAlerts();
+
+        // ✅ Hide loader after loading everything
+        hideLoader();
+
+      } catch (err) {
+        console.error("Error loading dashboard:", err);
+        overallAQIEl.textContent = "Error";
+        overallStatusEl.textContent = "Failed to load data";
+        overallStatusEl.className = "aqi-label status-color-unhealthy";
+
+        const predictedNextHourEl = document.getElementById("predicted-next-hour");
+        const predictedStatusEl = document.getElementById("predicted-status");
+        predictedNextHourEl.textContent = "Error";
+        predictedStatusEl.textContent = "Failed to load prediction";
+        predictedStatusEl.className = "aqi-label status-color-unhealthy";
+
+        loaderScreen.innerHTML = `
+          <p style="color:red;font-weight:600;">⚠️ Failed to connect to server</p>
+          <p style="font-size:14px;color:#555;">Please check backend & refresh</p>
+          <button onclick="location.reload()" style="margin-top:15px;padding:8px 16px;background:var(--primary-blue);color:white;border:none;border-radius:6px;cursor:pointer;">Retry</button>
+        `;
+      }
+    }
+
+    // ✅ Update selected zone
+    function updateZone(zone) {
+      if (!zone) return;
+      const status = getAQIStatus(zone.aqi);
+
+      zoneNameEl.textContent = zone.name;
+      zoneAQIEl.textContent = zone.aqi;
+      zoneStatusEl.textContent = status.text;
+      zoneStatusEl.className = `aqi-status ${status.color}`;
+      zoneDominantEl.textContent = zone.dominantPollutant;
+
+      // ✅ Update AQI Bar dynamically
+      const bar = document.getElementById("zone-aqi-bar");
+      const percentage = Math.min((zone.aqi / 500) * 100, 100); // AQI scale max 500
+      bar.style.width = `${percentage}%`;
+      bar.style.backgroundColor = status.fill; // use same color as status
+
+      map.setView([zone.coords[0], zone.coords[1]], 13);
+      if (markers[zone.name]) markers[zone.name].openPopup();
+    }
+
+    // ✅ Fullscreen map button
+    const mapDiv = document.getElementById("map");
+    const fullscreenBtn = document.createElement("button");
+    fullscreenBtn.textContent = "⛶ Fullscreen";
+    fullscreenBtn.className = "fullscreen-btn";
+    mapDiv.appendChild(fullscreenBtn);
+
+    fullscreenBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        setTimeout(() => {
+          mapDiv.requestFullscreen().then(() => {
+            fullscreenBtn.textContent = "⤡ Exit Fullscreen";
+          }).catch(err => console.error("Fullscreen error:", err));
+        }, 50);
+      } else {
+        document.exitFullscreen();
+        fullscreenBtn.textContent = "⛶ Fullscreen";
+      }
+    });
+
+    // ✅ Dropdown change listener
+    zoneSelect.addEventListener("change", (e) => {
+      const zone = zones.find((z) => z.name === e.target.value);
+      updateZone(zone);
+    });
+
+    // ✅ Render Alerts
+    function updateAlerts() {
+      const container = document.getElementById("alerts-container");
+      container.innerHTML = "";
+
+      // Show zones with AQI > 50 (Moderate or worse)
+      const alertZones = zones.filter((z) => z.aqi > 50);
+      
+      if (alertZones.length === 0) {
+        container.innerHTML = "<p style='color:var(--text-light);font-size:14px;'>All zones are Good ✅</p>";
+        return;
+      }
+
+      alertZones.forEach((z) => {
+        const status = getAQIStatus(z.aqi);
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert-box ${status.text.toLowerCase().replace(" ", "-")}`;
+        alertDiv.innerHTML = `
+          <div class="alert-location">${z.name}</div>
+          <div class="alert-details">
+            <span>AQI: ${z.aqi}</span>
+            <span>${z.dominantPollutant}</span>
+          </div>
+        `;
+        container.appendChild(alertDiv);
+      });
+    }
+
+    // ✅ Auto-refresh data every 5 minutes
+    function startAutoRefresh() {
+      setInterval(() => {
+        console.log("Refreshing dashboard data...");
+        loadDashboard();
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+
+    // ✅ Initial load
+    loadDashboard();
+    startAutoRefresh();
+  </script>
+</body>
+</html>

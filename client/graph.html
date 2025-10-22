@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chennai Pollution Monitor - Trends</title>
+      <link rel="icon" href="./asserts/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #3498db;
+            --primary-green: #00e400;
+            --primary-orange: #f39c12;
+            --primary-red: #e74c3c;
+            --primary-purple: #9b59b6;
+            --primary-teal: #1abc9c;
+            --text-dark: #2c3e50;
+            --text-medium: #546e7a;
+            --text-light: #7f8c8d;
+            --page-bg: #f8fafc;
+            --border-color: #e1e8ed;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--page-bg);
+            color: var(--text-dark);
+            overflow-y: auto;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* Header & Tabs */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px 0 10px;
+        }
+
+        .left-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-info {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tabs {
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-link {
+            display: inline-block;
+            text-decoration: none;
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            margin-right: 15px;
+            font-size: 16px;
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+        }
+
+        .tab-link.active {
+            color: var(--primary-blue);
+            font-weight: 700;
+            border-bottom: 3px solid var(--primary-blue);
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .trend-up { color: var(--primary-red); }
+        .trend-down { color: var(--primary-green); }
+        .trend-stable { color: var(--primary-orange); }
+
+        /* Charts Grid Layout */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Chart Containers */
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            height: 400px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 50px);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+            padding: 15px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+
+        /* Loader */
+        #loader-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(248, 250, 252, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e0e0e0;
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        #loader-screen p {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .zone-selector {
+            margin-bottom: 20px;
+        }
+
+        .zone-selector select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            font-weight: 500;
+            min-width: 200px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loader-screen">
+        <div class="spinner"></div>
+        <p>Loading Pollution Trends...</p>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="left-header">
+                <img src="./asserts/logo.png" alt="Chennai Pollution Monitor Logo" class="logo">
+                <h1>Chennai Pollution Monitor</h1>
+            </div>
+            <div class="header-info">Last updated: <span id="last-updated">...</span></div>
+        </div>
+
+        <div class="tabs">
+            <a href="index.html" class="tab-link">Home</a>
+            <a href="dashboard.html" class="tab-link">Dashboard</a>
+            <a href="graph.html" class="tab-link active">Trends</a>
+            <a href="alerts.html" class="tab-link">Alerts</a>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Overall Chennai AQI</div>
+                <div class="stat-value" id="overall-aqi">--</div>
+                <div class="stat-label" id="overall-status">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Predicted AQI (Next Hour)</div>
+                <div class="stat-value" id="predicted-aqi">--</div>
+                <div class="stat-label" id="predicted-status">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Zones Monitored</div>
+                <div class="stat-value" id="zones-count">--</div>
+                <div class="stat-label">Active Locations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Most Polluted Zone</div>
+                <div class="stat-value" id="worst-zone">--</div>
+                <div class="stat-label" id="worst-aqi">-- AQI</div>
+            </div>
+        </div>
+
+        <!-- Zone Selector -->
+        <div class="zone-selector">
+            <select id="zone-select">
+                <option value="all">All Zones Overview</option>
+                <!-- Zones will be populated dynamically -->
+            </select>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <!-- AQI Distribution Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">AQI Distribution Across Zones</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="aqi-distribution-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Pollutant Composition -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Dominant Pollutants</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pollutant-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Zone Comparison -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Top 10 Most Polluted Zones</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="zone-comparison-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- AQI Status Breakdown -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Air Quality Status Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="status-breakdown-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">Chennai Pollution Monitoring System | Real-time data from Google Air Quality API</div>
+    </div>
+
+    <script>
+        // AQI Status Helper Function
+        function getAQIStatus(aqi) {
+            if (aqi <= 50) return { text: "Good", color: "#00e400", class: "good" };
+            if (aqi <= 100) return { text: "Moderate", color: "#ffff00", class: "moderate" };
+            if (aqi <= 150) return { text: "Unhealthy for Sensitive", color: "#ff7e00", class: "unhealthy-sensitive" };
+            if (aqi <= 200) return { text: "Unhealthy", color: "#ff0000", class: "unhealthy" };
+            if (aqi <= 300) return { text: "Very Unhealthy", color: "#8f3f97", class: "very-unhealthy" };
+            return { text: "Hazardous", color: "#7e0023", class: "hazardous" };
+        }
+
+        // Main Application
+        class TrendsApp {
+            constructor() {
+                this.zones = [];
+                this.charts = {};
+                this.init();
+            }
+
+            async init() {
+                await this.loadData();
+                this.setupEventListeners();
+                this.updateLastUpdated();
+                
+                // Auto-refresh every 2 minutes
+                setInterval(async () => {
+                    await this.loadData();
+                    this.updateLastUpdated();
+                }, 120000);
+            }
+
+            async loadData() {
+                try {
+                    showLoader();
+                    
+                    const response = await fetch('http://localhost:3000/api/dashboard');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch data from server');
+                    }
+                    
+                    const data = await response.json();
+                    this.zones = data.zones;
+                    
+                    this.updateStatistics(data);
+                    this.renderCharts();
+                    this.populateZoneSelector();
+                    
+                    hideLoader();
+                    
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.showError('Failed to load data from server. Please check if the server is running.');
+                    hideLoader();
+                }
+            }
+
+            updateStatistics(data) {
+                // Overall AQI
+                document.getElementById('overall-aqi').textContent = data.overallAQI;
+                const overallStatus = getAQIStatus(data.overallAQI);
+                document.getElementById('overall-status').textContent = overallStatus.text;
+                document.getElementById('overall-status').style.color = overallStatus.color;
+
+                // Predicted AQI
+                document.getElementById('predicted-aqi').textContent = 
+                    data.predictedNextHourAQI ? data.predictedNextHourAQI.toFixed(1) : 'N/A';
+                if (data.predictedNextHourAQI) {
+                    const predictedStatus = getAQIStatus(data.predictedNextHourAQI);
+                    document.getElementById('predicted-status').textContent = predictedStatus.text;
+                    document.getElementById('predicted-status').style.color = predictedStatus.color;
+                }
+
+                // Zones count
+                document.getElementById('zones-count').textContent = this.zones.length;
+
+                // Most polluted zone
+                if (this.zones.length > 0) {
+                    const worstZone = this.zones.reduce((max, zone) => 
+                        zone.aqi > max.aqi ? zone : max
+                    );
+                    document.getElementById('worst-zone').textContent = 
+                        worstZone.name.length > 12 ? worstZone.name.substring(0, 12) + '...' : worstZone.name;
+                    document.getElementById('worst-aqi').textContent = `${worstZone.aqi} AQI`;
+                }
+            }
+
+            renderCharts() {
+                this.renderAQIDistributionChart();
+                this.renderPollutantChart();
+                this.renderZoneComparisonChart();
+                this.renderStatusBreakdownChart();
+            }
+
+            renderAQIDistributionChart() {
+                const ctx = document.getElementById('aqi-distribution-chart').getContext('2d');
+                
+                if (this.charts.aqiDistribution) {
+                    this.charts.aqiDistribution.destroy();
+                }
+
+                // Sort zones by AQI for better visualization
+                const sortedZones = [...this.zones].sort((a, b) => b.aqi - a.aqi).slice(0, 15);
+                
+                const datasets = [{
+                    label: 'AQI',
+                    data: sortedZones.map(zone => zone.aqi),
+                    backgroundColor: sortedZones.map(zone => getAQIStatus(zone.aqi).color),
+                    borderColor: sortedZones.map(zone => getAQIStatus(zone.aqi).color),
+                    borderWidth: 1
+                }];
+
+                this.charts.aqiDistribution = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedZones.map(zone => 
+                            zone.name.length > 15 ? zone.name.substring(0, 15) + '...' : zone.name
+                        ),
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'AQI'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `AQI: ${context.parsed.y}`;
+                                    },
+                                    afterLabel: function(context) {
+                                        const zone = sortedZones[context.dataIndex];
+                                        return `Dominant: ${zone.dominantPollutant}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderPollutantChart() {
+                const ctx = document.getElementById('pollutant-chart').getContext('2d');
+                
+                if (this.charts.pollutant) {
+                    this.charts.pollutant.destroy();
+                }
+
+                // Count dominant pollutants
+                const pollutantCount = {};
+                this.zones.forEach(zone => {
+                    const pollutant = zone.dominantPollutant;
+                    pollutantCount[pollutant] = (pollutantCount[pollutant] || 0) + 1;
+                });
+
+                const pollutants = Object.keys(pollutantCount);
+                const counts = Object.values(pollutantCount);
+
+                const backgroundColors = [
+                    '#e74c3c', '#3498db', '#2ecc71', '#f39c12', 
+                    '#9b59b6', '#1abc9c', '#34495e', '#e67e22'
+                ];
+
+                this.charts.pollutant = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: pollutants,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: backgroundColors.slice(0, pollutants.length),
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return `${context.label}: ${context.parsed} zones (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderZoneComparisonChart() {
+                const ctx = document.getElementById('zone-comparison-chart').getContext('2d');
+                
+                if (this.charts.zoneComparison) {
+                    this.charts.zoneComparison.destroy();
+                }
+
+                // Get top 10 most polluted zones
+                const topZones = [...this.zones]
+                    .sort((a, b) => b.aqi - a.aqi)
+                    .slice(0, 10);
+
+                this.charts.zoneComparison = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: topZones.map(zone => 
+                            zone.name.length > 12 ? zone.name.substring(0, 12) + '...' : zone.name
+                        ),
+                        datasets: [{
+                            label: 'AQI',
+                            data: topZones.map(zone => zone.aqi),
+                            backgroundColor: topZones.map(zone => getAQIStatus(zone.aqi).color),
+                            borderColor: topZones.map(zone => getAQIStatus(zone.aqi).color),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'AQI'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        const zone = topZones[context.dataIndex];
+                                        return `Dominant: ${zone.dominantPollutant}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderStatusBreakdownChart() {
+                const ctx = document.getElementById('status-breakdown-chart').getContext('2d');
+                
+                if (this.charts.statusBreakdown) {
+                    this.charts.statusBreakdown.destroy();
+                }
+
+                // Count zones by AQI status
+                const statusCount = {
+                    'Good': 0,
+                    'Moderate': 0,
+                    'Unhealthy for Sensitive': 0,
+                    'Unhealthy': 0,
+                    'Very Unhealthy': 0,
+                    'Hazardous': 0
+                };
+
+                this.zones.forEach(zone => {
+                    const status = getAQIStatus(zone.aqi).text;
+                    statusCount[status]++;
+                });
+
+                const statuses = Object.keys(statusCount).filter(status => statusCount[status] > 0);
+                const counts = statuses.map(status => statusCount[status]);
+                const colors = statuses.map(status => getAQIStatus(
+                    status === 'Good' ? 25 : 
+                    status === 'Moderate' ? 75 :
+                    status === 'Unhealthy for Sensitive' ? 125 :
+                    status === 'Unhealthy' ? 175 :
+                    status === 'Very Unhealthy' ? 250 : 350
+                ).color);
+
+                this.charts.statusBreakdown = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: statuses,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        return `${context.label}: ${context.parsed} zones (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            populateZoneSelector() {
+                const selector = document.getElementById('zone-select');
+                // Clear existing options except the first one
+                while (selector.children.length > 1) {
+                    selector.removeChild(selector.lastChild);
+                }
+                
+                // Add zone options
+                this.zones.forEach(zone => {
+                    const option = document.createElement('option');
+                    option.value = zone.name;
+                    option.textContent = zone.name;
+                    selector.appendChild(option);
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('zone-select').addEventListener('change', (e) => {
+                    // Future enhancement: Filter charts by selected zone
+                    console.log('Zone selected:', e.target.value);
+                });
+            }
+
+            updateLastUpdated() {
+                document.getElementById('last-updated').textContent = 
+                    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            showError(message) {
+                // Simple error display
+                alert(message);
+            }
+        }
+
+        // Loader functions
+        function showLoader() {
+            document.getElementById('loader-screen').style.display = 'flex';
+        }
+
+        function hideLoader() {
+            document.getElementById('loader-screen').style.display = 'none';
+        }
+
+        // Initialize the application when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            new TrendsApp();
+        });
+    </script>
+</body>
+</html>

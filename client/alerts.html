@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chennai Pollution Monitor - Alerts</title>
+    <link rel="icon" href="./asserts/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root {
+            --primary-blue: #3498db;
+            --primary-green: #00e400;
+            --primary-orange: #f39c12;
+            --primary-red: #e74c3c;
+            --primary-purple: #9b59b6;
+            --primary-teal: #1abc9c;
+            --text-dark: #2c3e50;
+            --text-medium: #546e7a;
+            --text-light: #7f8c8d;
+            --page-bg: #f8fafc;
+            --border-color: #e1e8ed;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--page-bg);
+            color: var(--text-dark);
+            overflow-y: auto;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* Header & Tabs */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px 0 10px;
+        }
+
+        .left-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-info {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tabs {
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-link {
+            display: inline-block;
+            text-decoration: none;
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            margin-right: 15px;
+            font-size: 16px;
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+        }
+
+        .tab-link.active {
+            color: var(--primary-blue);
+            font-weight: 700;
+            border-bottom: 3px solid var(--primary-blue);
+        }
+
+        /* Alerts Grid Layout */
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            padding-bottom: 30px;
+        }
+
+        /* Section Header */
+        .section-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        /* Alert Containers */
+        .active-alerts-container,
+        .alert-history-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Individual Alert Styles */
+        .alert-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .alert-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-icon {
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        /* Alert Severity Classes - Updated to match AQI colors */
+        .alert-good {
+            background-color: rgba(0, 228, 0, 0.1);
+            color: var(--primary-green);
+            border: 1px solid rgba(0, 228, 0, 0.2);
+        }
+
+        .alert-good .alert-icon {
+            color: var(--primary-green);
+        }
+
+        .alert-moderate {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--primary-orange);
+            border: 1px solid rgba(243, 156, 18, 0.2);
+        }
+
+        .alert-moderate .alert-icon {
+            color: var(--primary-orange);
+        }
+
+        .alert-unhealthy {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--primary-red);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        .alert-unhealthy .alert-icon {
+            color: var(--primary-red);
+        }
+
+        .alert-very-unhealthy {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: var(--primary-purple);
+            border: 1px solid rgba(155, 89, 182, 0.2);
+        }
+
+        .alert-very-unhealthy .alert-icon {
+            color: var(--primary-purple);
+        }
+
+        .alert-hazardous {
+            background-color: rgba(126, 0, 35, 0.1);
+            color: #7e0023;
+            border: 1px solid rgba(126, 0, 35, 0.2);
+        }
+
+        .alert-hazardous .alert-icon {
+            color: #7e0023;
+        }
+
+        .alert-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .aqi-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+        }
+
+        .badge-good {
+            background-color: var(--primary-green);
+        }
+
+        .badge-moderate {
+            background-color: var(--primary-orange);
+        }
+
+        .badge-unhealthy {
+            background-color: var(--primary-red);
+        }
+
+        .badge-very-unhealthy {
+            background-color: var(--primary-purple);
+        }
+
+        .badge-hazardous {
+            background-color: #7e0023;
+        }
+
+        /* Chart Styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        /* Active Alerts Container */
+        .active-alerts-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            height: 400px;
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .active-alerts-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .active-alerts-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+
+        .active-alerts-container::-webkit-scrollbar-thumb {
+            background-color: #c1c1c1;
+            border-radius: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+            padding: 15px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+
+        /* Loader Screen */
+        #loader-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(248, 250, 252, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e0e0e0;
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        #loader-screen p {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* No Data State */
+        .no-data {
+            text-align: center;
+            color: var(--text-light);
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .no-data-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Error State */
+        .error-state {
+            text-align: center;
+            color: var(--primary-red);
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .alert-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .alert-details {
+                align-self: flex-end;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .left-header {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loader-screen">
+        <div class="spinner"></div>
+        <p>Loading Alerts...</p>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="left-header">
+                <img src="./asserts/logo.png" alt="Chennai Pollution Monitor Logo" class="logo">
+                <h1>Chennai Pollution Monitor</h1>
+            </div>
+            <div class="header-info">Last updated: <span id="last-updated">...</span></div>
+        </div>
+
+        <div class="tabs">
+            <a href="index.html" class="tab-link">Home</a>
+            <a href="dashboard.html" class="tab-link">Dashboard</a>
+            <a href="graph.html" class="tab-link">Trends</a>
+            <a href="alerts.html" class="tab-link active">Alerts</a>
+        </div>
+
+        <div class="alerts-grid">
+            <div class="active-alerts-section">
+                <div class="section-header">Active Alerts</div>
+                <div id="alerts-container" class="active-alerts-container">
+                    <div class="no-data">
+                        <div class="no-data-icon">📊</div>
+                        <p>Loading pollution data...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-history-section">
+                <div class="section-header">Alert History (Last 12 Months)</div>
+                <div class="alert-history-container">
+                    <div class="chart-container">
+                        <canvas id="alert-history-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">Chennai Pollution Monitoring System | Data updates every 15 seconds</div>
+    </div>
+
+    <script>
+        const loaderScreen = document.getElementById("loader-screen");
+
+        // AQI Status Helper Function
+        function getAQIStatus(aqi) {
+            if (aqi <= 50) return { text: "Good", color: "good", badge: "badge-good" };
+            if (aqi <= 100) return { text: "Moderate", color: "moderate", badge: "badge-moderate" };
+            if (aqi <= 200) return { text: "Unhealthy", color: "unhealthy", badge: "badge-unhealthy" };
+            if (aqi <= 300) return { text: "Very Unhealthy", color: "very-unhealthy", badge: "badge-very-unhealthy" };
+            return { text: "Hazardous", color: "hazardous", badge: "badge-hazardous" };
+        }
+
+        function showLoader() {
+            loaderScreen.style.opacity = "1";
+            loaderScreen.style.display = "flex";
+        }
+
+        function hideLoader() {
+            loaderScreen.style.opacity = "0";
+            setTimeout(() => (loaderScreen.style.display = "none"), 500);
+        }
+
+        async function loadAlerts() {
+            try {
+                showLoader();
+
+                const res = await fetch("http://localhost:3000/api/dashboard");
+
+                if (!res.ok) {
+                    throw new Error(`Server responded with ${res.status}`);
+                }
+
+                const data = await res.json();
+                const zones = data.zones;
+
+                // Container to inject alerts
+                const container = document.getElementById("alerts-container");
+
+                // Filter zones with AQI > 50 (Moderate or worse)
+                const alertZones = zones.filter(z => z.aqi > 50);
+
+                if (alertZones.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <div class="no-data-icon">✅</div>
+                            <p>All zones have good air quality!</p>
+                            <p style="font-size: 14px; margin-top: 10px;">No active alerts at this time.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Clear container
+                container.innerHTML = "";
+
+                // Render alert cards
+                alertZones.forEach(zone => {
+                    const status = getAQIStatus(zone.aqi);
+                    const alertDiv = document.createElement("div");
+                    alertDiv.className = `alert-card alert-${status.color}`;
+                    alertDiv.innerHTML = `
+                        <div class="alert-content">
+                            <span class="alert-icon">⚠️</span>
+                            <div>
+                                <strong>${zone.name}</strong>
+                                <div style="font-size: 13px; color: var(--text-light); margin-top: 4px;">
+                                    Dominant Pollutant: ${zone.dominantPollutant}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert-details">
+                            <span class="aqi-badge ${status.badge}">AQI: ${zone.aqi}</span>
+                            <span style="color: var(--text-light); font-size: 13px;">${status.text}</span>
+                        </div>
+                    `;
+                    container.appendChild(alertDiv);
+                });
+
+            } catch (err) {
+                console.error("Error loading alerts:", err);
+                const container = document.getElementById("alerts-container");
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <p>Failed to load alerts</p>
+                        <p style="font-size: 14px; color: var(--text-light); margin-top: 10px;">
+                            Make sure the server is running on localhost:3000
+                        </p>
+                        <button onclick="loadAlerts()" style="
+                            margin-top: 15px;
+                            padding: 8px 16px;
+                            background: var(--primary-blue);
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-family: 'Inter', sans-serif;
+                        ">Retry</button>
+                    </div>
+                `;
+            } finally {
+                hideLoader();
+            }
+        }
+
+        async function updateLastUpdated() {
+            try {
+                const res = await fetch("http://localhost:3000/api/dashboard");
+                if (!res.ok) throw new Error('Server not responding');
+
+                const data = await res.json();
+                const lastUpdatedEl = document.getElementById("last-updated");
+                const updatedTime = new Date(data.lastUpdated);
+                lastUpdatedEl.textContent = updatedTime.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } catch (err) {
+                console.error("Failed to fetch last updated:", err);
+                document.getElementById("last-updated").textContent = "Unable to update";
+            }
+        }
+
+        // Alert History Chart Data
+        const alertHistoryData = {
+            labels: [
+                "Nov", "Dec", "Jan", "Feb", "Mar", "Apr",
+                "May", "Jun", "Jul", "Aug", "Sep", "Oct"
+            ],
+            datasets: [{
+                label: 'Number of Alerts',
+                data: [5, 3, 7, 4, 6, 2, 8, 5, 4, 6, 7, 3],
+                backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        };
+
+        const alertHistoryConfig = {
+            type: 'bar',
+            data: alertHistoryData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monthly Pollution Alerts',
+                        font: {
+                            size: 16,
+                            weight: '600'
+                        },
+                        color: 'var(--text-dark)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Alerts',
+                            color: 'var(--text-dark)'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month',
+                            color: 'var(--text-dark)'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load alerts on page load
+            loadAlerts();
+
+            // Update last updated time
+            updateLastUpdated();
+
+            // Render chart
+            const alertHistoryChartEl = document.getElementById('alert-history-chart');
+            new Chart(alertHistoryChartEl, alertHistoryConfig);
+
+            // Refresh alerts every 15 seconds
+            setInterval(() => {
+                loadAlerts();
+                updateLastUpdated();
+            }, 15000);
+        });
+    </script>
+</body>
+
+</html>
