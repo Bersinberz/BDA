@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="./asserts/logo.png">
+  <title>Chennai Pollution Monitor - Landing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary-blue: #3498db;
+      --primary-teal: #1abc9c;
+      --primary-green: #2ecc71;
+      --text-dark: #2c3e50;
+      --text-light: #7f8c8d;
+      --page-bg: #f8fafc;
+      --border-color: #e1e8ed;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background-color: var(--page-bg);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Container */
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1500px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 40px;
+      box-sizing: border-box;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30px 0 10px;
+    }
+
+    .left-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      height: 50px;
+      width: auto;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-info {
+      font-size: 14px;
+      color: var(--text-light);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* Tabs */
+    .tabs {
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .tab-link {
+      display: inline-block;
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 10px 15px;
+      margin-right: 15px;
+      font-size: 16px;
+      color: var(--text-light);
+      font-family: "Inter", sans-serif;
+      cursor: pointer;
+      position: relative;
+      top: 2px;
+    }
+
+    .tab-link.active {
+      color: var(--primary-blue);
+      font-weight: 700;
+      border-bottom: 3px solid var(--primary-blue);
+    }
+
+    /* Landing Form */
+    .landing-container {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      margin: 60px auto 450px;
+      position: relative;
+    }
+
+    .landing-container h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .landing-container input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .location-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .location-group input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .landing-container button {
+      width: 100%;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--primary-blue);
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background 0.2s ease;
+    }
+
+    .landing-container button:hover {
+      background-color: var(--primary-teal);
+    }
+
+    /* Loader */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .loader {
+      border: 6px solid #e3e3e3;
+      border-top: 6px solid var(--primary-blue);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Chatbot Styles */
+    .chatbot-soldier {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 80px;
+      height: 120px;
+      z-index: 1000;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      animation: soldierEntrance 1.5s ease-out forwards;
+    }
+    .chatbot-soldier img {
+      width: 500px;
+      height: 150px;
+      margin-left:-200px;
+      margin-bottom:30px;
+    }
+    
+    .chatbot-soldier:hover {
+      transform: scale(1.05);
+    }
+    
+    .soldier-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .soldier-speech-bubble {
+      position: absolute;
+      bottom: 130px;
+      left: 0;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 200px;
+      font-size: 14px;
+      line-height: 1.4;
+      animation: fadeInOut 3s ease-in-out forwards;
+    }
+    
+    .soldier-speech-bubble:after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 20px;
+      border: 10px solid transparent;
+      border-top-color: white;
+    }
+    
+    .chat-interface {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 400px;
+      height: 500px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      z-index: 1001;
+      overflow: hidden;
+      transform: translateX(120%);
+      transition: transform 0.3s ease;
+    }
+    
+    .chat-interface.open {
+      transform: translateX(0);
+    }
+    
+    .chat-header {
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-teal));
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .chat-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    .chat-header img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .message {
+      padding: 10px 15px;
+      border-radius: 18px;
+      max-width: 80%;
+      line-height: 1.4;
+    }
+    
+    .user-message {
+      align-self: flex-end;
+      background: var(--primary-blue);
+      color: white;
+    }
+    
+    .bot-message {
+      align-self: flex-start;
+      background: #f1f1f1;
+      color: var(--text-dark);
+    }
+    
+    .chat-input-container {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      font-size: 14px;
+      outline: none;
+    }
+    
+    .send-button {
+      background: var(--primary-blue);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-left: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    @keyframes soldierEntrance {
+      0% {
+        transform: translateX(100vw);
+      }
+      70% {
+        transform: translateX(-20px);
+      }
+      100% {
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      20% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      80% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+    
+    .close-chat {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+  </style>
+</head>
+
+<body>
+  
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="left-header">
+        <img src="./asserts/logo.png" alt="Chennai Pollution Monitor Logo" class="logo" />
+        <h1>Chennai Pollution Monitor</h1>
+      </div>
+      <div class="header-info">Last updated: <span id="last-updated">...</span></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <a href="index.html" class="tab-link active">Home</a>
+      <a href="dashboard.html" class="tab-link">Dashboard</a>
+      <a href="graph.html" class="tab-link">Trends</a>
+      <a href="alerts.html" class="tab-link">Alerts</a>
+    </div>
+  </div>
+
+  <!-- Landing Form -->
+  <div class="landing-container">
+    <h2>Check AQI at your Location</h2>
+    <input type="text" id="name" placeholder="Full Name" />
+    <input type="tel" id="phone" placeholder="Phone Number" value="+91" />
+    <div class="location-group">
+      <input type="text" id="latitude" placeholder="Latitude" />
+      <input type="text" id="longitude" placeholder="Longitude" />
+    </div>
+    <button id="detect-location">Detect My Location</button>
+    <button id="submit-form">Submit</button>
+  </div>
+
+  <!-- Chatbot Soldier -->
+  <div class="chatbot-soldier" id="chatbot-soldier">
+    <img src="./asserts/sentinel.png" 
+         alt="Mr. Pollution Sentinel" class="soldier-image" />
+    <div class="soldier-speech-bubble" id="soldier-speech">
+      Ask me anything about Chennai's air quality and health recommendations!
+    </div>
+  </div>
+
+  <!-- Chat Interface -->
+  <div class="chat-interface" id="chat-interface">
+    <div class="chat-header">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Cpath fill='white' d='M50 10 L60 30 L40 30 Z'/%3E%3Crect x='35' y='30' width='30' height='70' fill='white'/%3E%3Crect x='25' y='100' width='50' height='40' fill='white'/%3E%3Ccircle cx='40' cy='50' r='5' fill='%231abc9c'/%3E%3Ccircle cx='60' cy='50' r='5' fill='%231abc9c'/%3E%3Cpath d='M45 65 L55 65' stroke='%231abc9c' stroke-width='2'/%3E%3C/svg%3E" 
+           alt="Mr. Pollution Sentinel" />
+      <h3>Mr. Pollution Sentinel</h3>
+      <button class="close-chat" id="close-chat">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="message bot-message">
+        Hello! I'm Mr. Pollution Sentinel. I can help you with information about Chennai's air quality and provide health recommendations. What would you like to know?
+      </div>
+    </div>
+    <div class="chat-input-container">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here..." />
+      <button class="send-button" id="send-message">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+  </div>
+
+  <script>
+    // Detect user location
+    document.getElementById("detect-location").addEventListener("click", () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            document.getElementById("latitude").value = latitude.toFixed(4);
+            document.getElementById("longitude").value = longitude.toFixed(4);
+          },
+          (err) => {
+            alert("Unable to detect location. Please enter manually.");
+            console.error(err);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    });
+
+    // Submit form
+    document.getElementById("submit-form").addEventListener("click", async () => {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const lat = document.getElementById("latitude").value.trim();
+      const lon = document.getElementById("longitude").value.trim();
+
+      if (!name || !phone || !lat || !lon) {
+        alert("Please fill in all fields!");
+        return;
+      }
+
+      const payload = { name, phone, latitude: parseFloat(lat), longitude: parseFloat(lon) };
+      const loader = document.getElementById("loader");
+      loader.style.display = "flex";
+
+      try {
+        const res = await fetch("http://localhost:3000/api/check-location", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        loader.style.display = "none";
+
+        if (!res.ok) {
+          alert(data.error || "Failed to check location AQI");
+          return;
+        }
+
+        const dialog = document.createElement("div");
+        dialog.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
+          box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+          text-align: center;
+          width: 420px;
+        `;
+        dialog.innerHTML = `
+          <h2 style="margin-bottom:10px;">Hello, ${name}!</h2>
+          <p><strong>AQI:</strong> ${data.aqi} (${data.status})</p>
+          <p><strong>Dominant Pollutant:</strong> ${data.dominantPollutant}</p>
+          <p style="margin-top:15px;">${data.alert}</p>
+          <button id="continueBtn" style="
+            margin-top:25px;
+            padding:12px 25px;
+            border:none;
+            border-radius:10px;
+            background-color:#3498db;
+            color:white;
+            cursor:pointer;
+            font-weight:600;
+            font-size:16px;
+          ">Continue</button>
+        `;
+        document.body.appendChild(dialog);
+
+        document.getElementById("continueBtn").addEventListener("click", () => {
+          window.location.href = `dashboard.html?lat=${lat}&lon=${lon}`;
+        });
+      } catch (err) {
+        loader.style.display = "none";
+        console.error(err);
+        alert("Error connecting to server");
+      }
+    });
+
+    // Update last updated time
+    async function updateLastUpdated() {
+      try {
+        const res = await fetch("http://localhost:3000/api/dashboard");
+        const data = await res.json();
+        document.getElementById("last-updated").textContent = new Date(data.lastUpdated).toLocaleTimeString();
+      } catch (err) {
+        console.error("Failed to fetch last updated:", err);
+        document.getElementById("last-updated").textContent = "N/A";
+      }
+    }
+
+    updateLastUpdated();
+
+    // Chatbot functionality
+    let chatOpen = false;
+    const soldier = document.getElementById('chatbot-soldier');
+    const speechBubble = document.getElementById('soldier-speech');
+    const chatInterface = document.getElementById('chat-interface');
+    const closeChat = document.getElementById('close-chat');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-message');
+
+    // Hide speech bubble after 3 seconds
+    setTimeout(() => {
+      speechBubble.style.display = 'none';
+    }, 3000);
+
+    // Toggle chat interface
+    soldier.addEventListener('click', () => {
+      if (!chatOpen) {
+        chatInterface.classList.add('open');
+        chatOpen = true;
+      }
+    });
+
+    closeChat.addEventListener('click', () => {
+      chatInterface.classList.remove('open');
+      chatOpen = false;
+    });
+
+    // Send message function
+    async function sendMessage() {
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      // Add user message to chat
+      addMessage(message, 'user');
+      chatInput.value = '';
+
+      // Show typing indicator
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'message bot-message';
+      typingIndicator.id = 'typing-indicator';
+      typingIndicator.innerHTML = 'Mr. Pollution Sentinel is typing...';
+      chatMessages.appendChild(typingIndicator);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        // Get current AQI data
+        const aqiData = await fetchAQIData();
+        
+        // Send message to LLM with AQI context
+        const response = await fetchLLMResponse(message, aqiData);
+        
+        // Remove typing indicator
+        document.getElementById('typing-indicator').remove();
+        
+        // Add bot response
+        addMessage(response, 'bot');
+      } catch (error) {
+        console.error('Error getting response:', error);
+        document.getElementById('typing-indicator').remove();
+        addMessage("I'm sorry, I'm having trouble connecting right now. Please try again later.", 'bot');
+      }
+    }
+
+    // Add message to chat
+    function addMessage(text, sender) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}-message`;
+      messageDiv.textContent = text;
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Fetch AQI data
+    async function fetchAQIData() {
+      try {
+        const response = await fetch('http://localhost:3000/api/dashboard');
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching AQI data:', error);
+        return null;
+      }
+    }
+
+    // Send message to LLM
+    // Send message to LLM
+async function fetchLLMResponse(userMessage, aqiData) {
+  try {
+    const response = await fetch('http://localhost:3000/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: userMessage,
+        aqiData: aqiData
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get response from AI');
+    }
+
+    const data = await response.json();
+    return data.response || "I'm sorry, I couldn't process your request at the moment.";
+  } catch (error) {
+    console.error('Error calling LLM:', error);
+    // Fallback response if LLM is unavailable
+    return `Based on current AQI data (${aqiData ? aqiData.overallAQI : 'unavailable'}), I recommend checking air quality levels in your specific area. For health recommendations, consider limiting outdoor activities when AQI is above 100, and wearing masks in highly polluted areas.`;
+  }
+}
+
+    // Event listeners for sending messages
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
